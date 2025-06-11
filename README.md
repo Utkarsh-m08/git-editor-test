@@ -1,4 +1,4 @@
-# ***hello changed from git-edito  ***<s>this is 2nd line</s>
+# ***hello changed from git-edito***<s>this is 2nd line</s>
 
 
 
