@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext.jsx";
 const UserProfile = ({ user }) => {
   const { logout, token } = useAuth();
 
+  // not updated 
   return (
     <div className="card">
       <h1>✅ Welcome back!</h1>

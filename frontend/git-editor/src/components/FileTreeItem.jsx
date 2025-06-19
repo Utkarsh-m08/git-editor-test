@@ -1,5 +1,21 @@
 import React from "react";
-
+import {
+  // file-pen-line,
+  FilePenLine,
+  File,
+  Atom,
+  Globe,
+  Palette,
+  Settings,
+  FolderOpen,
+  FolderClosed,
+  BookCopy,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  CircleChevronDown,
+  CircleChevronRight,
+} from "lucide-react";
 const FileTreeItem = ({
   item,
   level,
@@ -11,52 +27,55 @@ const FileTreeItem = ({
 }) => {
   const getFileIcon = (item) => {
     if (item.type === "dir") {
-      return isExpanded ? "📂" : "📁";
+      return isExpanded ? (
+        <FolderOpen></FolderOpen>
+      ) : (
+        <FolderClosed></FolderClosed>
+      );
     }
 
     // File icons based on extension
     const extension = item.name.split(".").pop()?.toLowerCase();
     const iconMap = {
-      js: "📄",
-      jsx: "⚛️",
-      ts: "📘",
-      tsx: "⚛️",
+      js: <File size={12} />,
+      jsx: <Atom size={12} />,
+      ts: <File size={12} />,
+      tsx: <Atom size={12} />,
 
       // Web files
-      html: "🌐",
-      css: "🎨",
-      scss: "🎨",
-      sass: "🎨",
+      html: <Globe size={12} />,
+      css: <Palette size={12} />,
+      scss: <Palette size={12} />,
+      sass: <Palette size={12} />,
 
       // Config files
-      json: "⚙️",
-      env: "🔐",
-      yml: "⚙️",
-      yaml: "⚙️",
-
+      json: <Settings size={12} />,
+      env: <Lock size={12} />,
+      yml: <Settings size={12} />,
+      yaml: <Settings size={12} />,
       // Documentation
-      md: "📝",
-      txt: "📄",
+      md: <FilePenLine size={12} />,
+      txt: <FilePenLine size={12} />,
 
       // Images
-      png: "🖼️",
-      jpg: "🖼️",
-      jpeg: "🖼️",
-      gif: "🖼️",
-      svg: "🎭",
+      png: <Image></Image>,
+      jpg: <Image></Image>,
+      jpeg: <Image></Image>,
+      gif: <Image></Image>,
+      svg: <Image></Image>,
 
       // Other languages
-      py: "🐍",
-      java: "☕",
-      php: "🐘",
-      rb: "💎",
-      go: "🐹",
-      rs: "🦀",
-      cpp: "⚡",
-      c: "⚡",
+      py: <BookCopy></BookCopy>,
+      java: <BookCopy></BookCopy>,
+      php: <BookCopy></BookCopy>,
+      rb: <BookCopy></BookCopy>,
+      go: <BookCopy></BookCopy>,
+      rs: <BookCopy></BookCopy>,
+      cpp: <BookCopy></BookCopy>,
+      c: <BookCopy></BookCopy>,
     };
 
-    return iconMap[extension] || "📄";
+    return iconMap[extension] || <File></File>;
   };
 
   const handleItemClick = (e) => {
@@ -70,21 +89,45 @@ const FileTreeItem = ({
   };
 
   return (
-    <div className="file-tree-item">
+    <div>
       <div
-        className={`file-item ${item.type} ${isSelected ? "selected" : ""}`}
-        style={{ paddingLeft: `${level * 20 + 8}px` }}
         onClick={handleItemClick}
+        style={{ paddingLeft: `${level * 20 + 8}px` }}
+        className={`flex items-center text-sm cursor-pointer relative py-1 px-2 rounded transition select-none
+        ${
+          isSelected
+            ? "bg-[var(--selection)] text-[var(--text)]"
+            : "text-[var(--text-muted)] hover:bg-[var(--hover)]"
+        }
+        ${item.type === "dir" ? "font-medium" : ""}`}
       >
-        <span className="file-icon">{getFileIcon(item)}</span>
-        <span className="file-name" title={item.path}>
+        <span className="flex items-center justify-center w-3 h-3 mr-2">
+          {getFileIcon(item)}
+        </span>
+
+        <span
+          className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm"
+          title={item.path}
+        >
           {item.name}
         </span>
+
         {item.type === "dir" && (
-          <span className="folder-arrow">{isExpanded ? "▼" : "▶"}</span>
+          <span className="ml-1 text-[10px] text-[var(--text-muted)] flex items-center justify-center w-4 h-4">
+            {isExpanded ? (
+              <CircleChevronDown size={12} />
+            ) : (
+              <CircleChevronRight size={12} />
+            )}
+          </span>
         )}
       </div>
-      {children && <div className="file-children">{children}</div>}
+
+      {children && (
+        <div className="ml-1 border-l border-[var(--border)] pl-2">
+          {children}
+        </div>
+      )}
     </div>
   );
 };

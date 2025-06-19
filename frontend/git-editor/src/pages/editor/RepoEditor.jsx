@@ -1,26 +1,27 @@
-// src/components/Dashboard.jsx
 import React, { useRef, useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import RepositoryList from "./RepositoryList";
 import FileExplorer from "./FileExplorer";
 import RichTextEditor from "./RichTextEditor";
-import SearchRepo from "./SearchRepo";
-import {
-  CircleUser,
-  Folder,
-  HelpCircle,
-  Home,
-  LogOut,
-  Settings,
-} from "lucide-react";
+import { CircleUser, HelpCircle, LogOut, Settings } from "lucide-react";
 
-const Dashboard = () => {
+const RepoEditor = () => {
   const { user, logout, token } = useAuth();
-  const [repoFound, setRepoFound] = useState(false);
-  const [selectedRepo, setSelectedRepo] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get repository from navigation state
+  const repository = location.state?.repository;
+
+  // Redirect to dashboard if no repository data
+  useEffect(() => {
+    if (!repository) {
+      navigate("/dashboard");
+    }
+  }, [repository, navigate]);
 
   // Click outside to close
   useEffect(() => {
@@ -33,35 +34,33 @@ const Dashboard = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleRepoSelect = (repo) => {
-    setSelectedRepo(repo);
-    setSelectedFile(null);
-  };
-
   const handleFileSelect = (file) => {
     setSelectedFile(file);
     console.log("Selected file:", file);
   };
 
   const handleBackToRepos = () => {
-    setSelectedRepo(null);
-    setSelectedFile(null);
+    // Navigate back to Dashboard
+    navigate("/dashboard");
   };
 
+  // Don't render if no repository
+  if (!repository) {
+    return null;
+  }
+
   return (
-    <div className="flex bg-[var(--bg)] text-[var(--text)] ">
-      {/* File Explorer Sidebar - only show if a repo is selected */}
-      {selectedRepo && (
-        <div className="w-sidebar  bg-[var(--accent)] border-r border-[var(--border)] flex flex-col overflow-hidden max-w-7xl">
-          <FileExplorer
-            repository={selectedRepo}
-            token={token}
-            onFileSelect={handleFileSelect}
-            selectedFile={selectedFile}
-            onBack={handleBackToRepos}
-          />
-        </div>
-      )}
+    <div className="h-screen flex bg-[var(--bg)] text-[var(--text)]">
+      {/* File Explorer Sidebar */}
+      <div className="w-sidebar bg-[var(--accent)] border-r border-[var(--border)] flex flex-col overflow-hidden">
+        <FileExplorer
+          repository={repository}
+          token={token}
+          onFileSelect={handleFileSelect}
+          selectedFile={selectedFile}
+          onBack={handleBackToRepos}
+        />
+      </div>
 
       {/* Main Area */}
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -70,7 +69,7 @@ const Dashboard = () => {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowDropdown((prev) => !prev)}
-              className="flex items-center gap-2 text-xs focus:outline-none"
+              className="flex items-center gap-2 text-sm focus:outline-none"
             >
               <img
                 src={user.avatar_url}
@@ -81,8 +80,8 @@ const Dashboard = () => {
             </button>
 
             {showDropdown && (
-              <div className="bg-[var(--bg)] p-1 absolute right-0 mt-2 w-48  border border-[var(--border)] rounded-[var(--radius)] shadow-lg z-50 text-xs">
-                <ul className="flex flex-col text-xs bg-[var(--bg)]">
+              <div className="bg-[var(--bg)] p-1 absolute right-0 mt-2 w-48  border border-[var(--border)] rounded-[var(--radius)] shadow-lg z-50 text-sm">
+                <ul className="flex flex-col text-sm bg-[var(--bg)]">
                   <li className="flex flex-row gap-2 px-4 py-2 hover:bg-[var(--hover)] cursor-pointer">
                     <CircleUser size={15} />
                     Profile
@@ -108,20 +107,17 @@ const Dashboard = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 mx-0 bg-[var(--bg)] pb-1 px-20">
-          {!selectedRepo ? (
-            <div className="">
-              <div className="">
-                <SearchRepo onSelectRepo={handleRepoSelect} />
+        <div className="pl-30 pb- flex-1 overflow-auto bg-[var(--bg)]">
+          {selectedFile ? (
+            <div className="flex justify-center h-full">
+              <div className="w-full max-w-4xl">
+                <RichTextEditor
+                  file={selectedFile}
+                  repository={repository}
+                  token={token}
+                />
               </div>
-              <RepositoryList onSelectRepo={handleRepoSelect} />
             </div>
-          ) : selectedFile ? (
-            <RichTextEditor
-              file={selectedFile}
-              repository={selectedRepo}
-              token={token}
-            />
           ) : (
             <div className="text-center text-[var(--text-muted)] mt-20">
               <h3 className="text-[var(--text)] mb-4 text-lg font-normal">
@@ -148,4 +144,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default RepoEditor;

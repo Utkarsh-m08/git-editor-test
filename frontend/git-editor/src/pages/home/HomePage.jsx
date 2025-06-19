@@ -1,9 +1,9 @@
 // src/components/HomePage.jsx
 import React from "react";
-import { useAuth } from "../contexts/AuthContext";
-import LoginCard from "./LoginCard";
-import Dashboard from "./Dashboard";
-import LoadingSpinner from "./LoadingSpinner";
+import { useAuth } from "../../contexts/AuthContext";
+import LoginCard from "../auth/LoginCard";
+import Dashboard from "../../components/Dashboard";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 const HomePage = () => {
   const { user, loading, isAuthenticated } = useAuth();
@@ -17,7 +17,7 @@ const HomePage = () => {
       {isAuthenticated ? (
         <Dashboard />
       ) : (
-        <div className="container">
+        <div className="mx-auto">
           <LoginCard />
         </div>
       )}

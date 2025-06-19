@@ -2,14 +2,17 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { githubService } from "../services/githubService";
+import { useNavigate } from "react-router-dom";
+
 import SearchRepo from "./SearchRepo";
 
 const RepositoryList = ({ onSelectRepo }) => {
+  const navigate = useNavigate();
+
   const { token } = useAuth();
   const [repositories, setRepositories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     loadRepositories();
   }, [token]);
@@ -34,6 +37,12 @@ const RepositoryList = ({ onSelectRepo }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getColor = (index) => {
+    const num = (index % 4) + 2;
+    const className = `bg-sky-${num}00`;
+    return className;
   };
 
   const getLanguageColor = (language) => {
@@ -62,11 +71,13 @@ const RepositoryList = ({ onSelectRepo }) => {
 
   if (loading) {
     return (
-      <div className="repository-list">
-        <h2>Your Repositories</h2>
-        <div className="loading-repos">
-          <div className="spinner"></div>
-          <p>Loading your repositories from GitHub...</p>
+      <div className="px-4 py-6 max-w-6xl mx-auto text-[var(--text)]">
+        {/* for saving variables from deletion in tailwind */}
+        <div className="bg-sky-200 bg-sky-300 bg-sky-400 bg-sky-500 bg-sky-600 bg-sky-700 bg-sky-800 bg-sky-900"></div>
+        {/* <h2 className="text-xl font-medium mb-4">Your Repositories</h2> */}
+        <div className="flex flex-col items-center justify-center h-52 gap-4 text-[var(--text-muted)]">
+          <div className="w-8 h-8 border-4 border-[var(--border)] border-t-[var(--accent)] rounded-full animate-spin" />
+          {/* <p>Loading your repositories from GitHub...</p> */}
         </div>
       </div>
     );
@@ -74,68 +85,87 @@ const RepositoryList = ({ onSelectRepo }) => {
 
   if (error) {
     return (
-      <div className="repository-list">
-        <h2>Your Repositories</h2>
-        <div className="error-repos">
+      <div className="px-4 py-6 max-w-6xl mx-auto text-[var(--text)]">
+        <h2 className="text-xl font-medium mb-4">Your Repositories</h2>
+        <div className="flex flex-col items-center justify-center h-52 gap-3 text-[var(--text-muted)]">
           <p>❌ Error loading repositories</p>
           <p>{error}</p>
-          <button onClick={loadRepositories} className="button primary">
+          <button
+            onClick={loadRepositories}
+            className="px-4 py-2 text-sm font-medium rounded-[var(--radius)] bg-[var(--hover)] hover:bg-[var(--bg)] transition"
+          >
             Retry
           </button>
         </div>
       </div>
     );
-  }
+  } else {
+    return (
+      <div className="px-4 py-6 max-w-6xl mx-auto h-full overflow-y-auto text-[var(--text)]">
+        {/* <SearchRepo onSelectRepo={onSearchRepo} /> */}
 
-  return (
-    <div className="repository-list">
-      {/* search repo container */}
-      <SearchRepo />
-      <h2>Your Repositories ({repositories.length})</h2>
+        <h2 className="text-xl font-medium mb-4">
+          Your Repositories ({repositories.length})
+        </h2>
 
-      <div className="repo-grid">
-        {repositories.map((repo) => (
-          <div
-            key={repo.id}
-            className="repo-card"
-            onClick={() => onSelectRepo(repo)}
-          >
-            <div className="repo-header">
-              <h3>{repo.name}</h3>
-              {repo.private && (
-                <span className="private-badge">🔒 Private</span>
-              )}
-            </div>
-            <p className="repo-description">
-              {repo.description || "No description available"}
-            </p>
-            <div className="repo-stats">
-              <span className="stat">
-                <span className="stat-icon">⭐</span>
-                {repo.stargazers_count}
-              </span>
-              <span className="stat">
-                <span className="stat-icon">🍴</span>
-                {repo.forks_count}
-              </span>
-              {repo.language && (
-                <span className="stat">
-                  <span
-                    className="language-dot"
-                    style={{ backgroundColor: getLanguageColor(repo.language) }}
-                  ></span>
-                  {repo.language}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {repositories.map((repo, index) => (
+            <div
+              key={repo.id}
+              className={`${getColor(
+                index
+              )} border border-[var(--border)] rounded-[var(--radius)] p-5 cursor-pointer transition hover:bg-[var(--hover)] hover:border-[var(--accent)] hover:-translate-y-0.5 shadow-sm `}
+              onClick={
+                // () => onSelectRepo(repo)
+                () => navigate(`/repos/${repo.owner.login}/${repo.name}`)
+              }
+            >
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-base font-medium text-[var(--text)]">
+                  {repo.name}
+                </h3>
+                {repo.private && (
+                  <span className="bg-[var(--accent)] text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                    🔒 Private
+                  </span>
+                )}
+              </div>
+
+              <p className="text-sm opacity-70 mb-4 min-h-[36px]">
+                {repo.description || "No description available"}
+              </p>
+
+              <div className="flex gap-4 text-xs text-[var(--text-muted)] mb-3">
+                <span className="flex items-center gap-1">
+                  <span className="text-[10px]">⭐</span>
+                  {repo.stargazers_count}
                 </span>
-              )}
+                <span className="flex items-center gap-1">
+                  <span className="text-[10px]">🍴</span>
+                  {repo.forks_count}
+                </span>
+                {repo.language && (
+                  <span className="flex items-center gap-1">
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{
+                        backgroundColor: getLanguageColor(repo.language),
+                      }}
+                    />
+                    {repo.language}
+                  </span>
+                )}
+              </div>
+
+              <div className="text-[11px] italic text-[var(--text-muted)]">
+                Updated {new Date(repo.updated_at).toLocaleDateString()}
+              </div>
             </div>
-            <div className="repo-updated">
-              Updated {new Date(repo.updated_at).toLocaleDateString()}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 };
 
 export default RepositoryList;
