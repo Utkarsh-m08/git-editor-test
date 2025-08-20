@@ -4,4 +4,4 @@
 
 <s>hwlefqefqefqefq</s>
 
-<s>/</s>
+/
